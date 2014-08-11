@@ -21,10 +21,10 @@ You send it commands followed by '\r\n' and it replies in kind. Some commands
 may brick or reset your device, this is not an extensive list.
 
 
-  nowd: Count of days of power use stored, not including today. The response is
+* nowd: Count of days of power use stored, not including today. The response is
         in the form "dNN" where NN is the stored days count, in hex.
 
-  nowl: This requests segment data for power use. Each day is divided into 12
+* nowl: This requests segment data for power use. Each day is divided into 12
         two-hour segments (each segment has 24 values of 5-minute periods).
         To request segment x on day y, request 'nowlyyxx'. These are 1-indexed,
         so the lowest day is 1, and the segments are in range 1-12.
@@ -37,14 +37,14 @@ may brick or reset your device, this is not an extensive list.
         and future periods will be indicated by FFFF (65535). If these values
         are not seen, then you could be looking at the wrong day.
 
-  nowx: As per 'nowd', but for the number of days of generation stored. This is
+* nowx: As per 'nowd', but for the number of days of generation stored. This is
         oddly sometimes a different number than 'nowd'.
 
         Note that this typically contains _only_ one or two days of data in the
         same form as 'nowd', e.g., this may return 1 and then there is data
         in day 1 and day 2 (being current).
 
-  nowq: This contains a higher number representing the starting point of stored
+* nowq: This contains a higher number representing the starting point of stored
         generation data that comes _after_ 'nowx'. e.g., 'nowx' may return 0,
         giving the first day in 1. 'nowq' might return 20, which seems to
         indicate following data is around here.
@@ -54,5 +54,5 @@ may brick or reset your device, this is not an extensive list.
           + 3 is one day ago
           + 4 is crash/no data :-)
 
-  nowh: As per 'nowl', but for generation.
+* nowh: As per 'nowl', but for generation.
 
