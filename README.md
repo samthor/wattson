@@ -56,3 +56,7 @@ may brick or reset your device, this is not an extensive list.
 
 * nowh: As per 'nowl', but for generation.
 
+### stty wrangling
+
+    /bin/stty -F /dev/ttyUSB0 19200 -parenb -cstopb cs8 cread -hupcl -crtscts clocal -inpck -ignpar -opost
+
