@@ -60,3 +60,10 @@ may brick or reset your device, this is not an extensive list.
 
     /bin/stty -F /dev/ttyUSB0 19200 -parenb -cstopb cs8 cread -hupcl -crtscts clocal -inpck -ignpar -opost
 
+    sam@server ~ $ stty -F /dev/ttyUSB0 
+    speed 19200 baud; line = 0;
+    min = 1; time = 0;
+    ignbrk -brkint -icrnl -imaxbel
+    -opost -onlcr
+    -isig -icanon -iexten -echo -echoe -echok noflsh -echoctl -echoke
+
