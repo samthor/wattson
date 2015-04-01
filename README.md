@@ -4,12 +4,9 @@ wattson
 Wattson control library. Written to pull generation/use data out of a
 "Wattson Solar Plus", but may work with a non-solar version.
 
-Some of this is inspired from-
-  https://github.com/sapg/openwattson/blob/master/protocol.txt
+Some of this is inspired from [openwattson](https://github.com/sapg/openwattson/blob/master/protocol.txt).
 
-Which is in turn, inspired by Mikko Pikarinen, whos page seems to no longer
-be online at this location-
-  http://dialog.hut.fi/openwattson/
+Which is in turn, inspired by [Mikko Pikarinen](http://dialog.hut.fi/openwattson/). Thanks!
 
 Protocol documentation
 ----------------------
@@ -59,7 +56,7 @@ may brick or reset your device, this is not an extensive list.
 stty wrangling
 --------------
 
-The Wattson expects a very specific serial connection. This library now supports this (see `[tty.go](tty.go)`), but previously this was set up manually via this magic incantation-
+The Wattson expects a very specific serial connection. This library now supports this (see [`tty.go`](tty.go)), but previously this was set up manually via this magic incantation-
 
     /bin/stty -F /dev/ttyUSB1 19200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok noflsh -echoctl -echoke
 
