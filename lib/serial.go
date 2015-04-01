@@ -3,28 +3,46 @@ package lib
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
-	"os"
-	"syscall"
 	"time"
 )
 
-type Serial struct {
-	rw   *bufio.ReadWriter
-	file *os.File
+const (
+	sep = "\r\n"
+)
+
+type readLine struct {
+	line string
+	err  error
 }
 
-// NewSerial opens a new serial connection to the given device. Assumes \r\n
-// as the line ending.
-func NewSerial(device string) (serial *Serial, err error) {
-	file, err := os.OpenFile(device, os.O_RDWR|syscall.O_NOCTTY, 0666)
-	if err != nil {
-		return nil, err
-	}
-	rw := bufio.NewReadWriter(bufio.NewReader(file), bufio.NewWriter(file))
-	serial = &Serial{rw, file}
-	serial.prime()
+type Serial struct {
+	rw    *bufio.ReadWriter
+	lines chan readLine
+}
 
+// NewSerial creates a new line-buffered connection to the given ReadWriter.
+// Assumes \r\n as the line ending.
+func NewSerial(x io.ReadWriter) (serial *Serial, err error) {
+	rw := bufio.NewReadWriter(bufio.NewReader(x), bufio.NewWriter(x))
+	serial = &Serial{rw, make(chan readLine, 100)}
+
+	go func() {
+		for {
+			raw, _, err := serial.rw.ReadLine()
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				log.Printf("got err reading: %v, %v", raw, err)
+			}
+			line := string(raw)
+			serial.lines <- readLine{line, err}
+		}
+	}()
+
+	serial.prime()
 	return serial, nil
 }
 
@@ -33,7 +51,8 @@ func (s *Serial) prime() {
 	tick := time.NewTicker(500 * time.Millisecond)
 	go func() {
 		for {
-			s.rw.WriteString("nowv\r\n")
+			log.Printf("sending nowv primer")
+			s.rw.WriteString("nowv" + sep)
 			s.rw.Flush()
 			select {
 			case <-done:
@@ -43,37 +62,20 @@ func (s *Serial) prime() {
 		}
 	}()
 
-	_, _, err := s.rw.ReadLine()
-	if err != nil {
-		log.Println("error reading primer", err)
-	}
+	line := <-s.lines
+	log.Printf("got resp from primer: %v", line)
 	done <- true
 }
 
 // Do sends a line, reads a line.
 func (s *Serial) Do(command string) (output string, err error) {
-	/*	for {
-		log.Println("peeking")
-		ret, err := s.rw.Peek(2)
-		log.Println("peeking done", err, ret)
-		if err != nil || len(ret) == 0 {
-			break // nodata
-		}
-		s.rw.Read(make([]byte, 32))
-	}*/
-
-	out := fmt.Sprintf("%s\r\n", command)
+	out := fmt.Sprintf("%s%s", command, sep)
 	_, err = s.rw.WriteString(out)
 	if err != nil {
 		return
 	}
 	s.rw.Flush()
-	raw, _, err := s.rw.ReadLine()
-	return string(raw), err
-}
 
-// Close shuts down the serial connection. Do not use this instance after
-// this point.
-func (s *Serial) Close() {
-	s.file.Close()
+	readLine := <-s.lines
+	return readLine.line, readLine.err
 }

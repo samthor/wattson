@@ -21,7 +21,7 @@ var (
 
 // DataBlock is a 5-minute block of data. It contains use and generation values.
 type DataBlock struct {
-	When time.Time
+	When    time.Time
 	Instant bool
 
 	Use int // watts
@@ -34,10 +34,17 @@ type DataBlock struct {
 func main() {
 	flag.Parse()
 
-	serial, err := lib.NewSerial(*devicePath)
+	file, err := openPath(*devicePath)
+	if err != nil {
+		log.Fatalln("could not open path", err)
+	}
+	defer file.Close()
+
+	serial, err := lib.NewSerial(file)
 	if err != nil {
 		log.Fatalln("could not connect", err)
 	}
+
 	log.Println("connected to", *devicePath)
 
 	bridge := lib.WattsonBridge{Serial: serial}
@@ -48,17 +55,17 @@ func main() {
 	//	bridge.Do(cmd)
 	//}
 
-	gen, use := FindLatestDay(&bridge)
-	log.Printf("FOUND gen=%d, use=%d", gen, use)
+	//	gen, use := FindLatestDay(&bridge)
+	//	log.Printf("FOUND gen=%d, use=%d", gen, use)
 
 	fmt.Printf("when,gen,agen,use,ause\n")
 
 	// display instant use for funsies
 	instant := DataBlock{
-		When: time.Now(),
+		When:    time.Now(),
 		Instant: true,
-		Use: bridge.HexValue('p'),
-		Gen: bridge.HexValue('w'),
+		Use:     bridge.HexValue('p'),
+		Gen:     bridge.HexValue('w'),
 	}
 	instant.Adjust()
 
@@ -125,7 +132,8 @@ func ReadData(bridge *lib.WattsonBridge) (output []DataBlock) {
 			genValues := bridge.Series('h', fmt.Sprintf(format, genday, segment))
 
 			if len(useValues) != 25 || len(genValues) != 25 {
-				panic("did not get 25 values")
+				log.Printf("did not get 25 values; probably wattson just turned on")
+				return output
 			}
 			for j := 23; j >= 0; j-- {
 				use := useValues[j]
