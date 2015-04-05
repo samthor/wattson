@@ -11,6 +11,7 @@ import (
 var (
 	devicePath = flag.String("device", "/dev/ttyUSB0", "serial device path")
 	blockLimit = flag.Int("block_limit", 100, "number of 5-minute blocks to get")
+	showHeader = flag.Bool("show_header", false, "whether to show header")
 
 	wattsonVolts = flag.Int("wattson_volts", 230, "assumed voltage wattson is built for")
 	volts        = flag.Int("volts", 0, "local voltage override")
@@ -58,7 +59,9 @@ func main() {
 	//	gen, use := FindLatestDay(&bridge)
 	//	log.Printf("FOUND gen=%d, use=%d", gen, use)
 
-	fmt.Printf("when,gen,agen,use,ause\n")
+	if *showHeader {
+		fmt.Printf("when,gen,agen,use,ause\n")
+	}
 
 	// display instant use for funsies
 	instant := DataBlock{
