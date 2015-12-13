@@ -16,6 +16,8 @@ var (
 	wattsonVolts = flag.Int("wattson_volts", 230, "assumed voltage wattson is built for")
 	volts        = flag.Int("volts", 0, "local voltage override")
 
+	upperLimit = flag.Int("upper_limit", 12000, "upper limit on data, probably error so ignore")
+
 	// TODO: this may also be available in the result to "nown" (+1).
 	powerUseFactor = flag.Float64("use_factor", 1.0, "power use scale factor")
 )
@@ -78,6 +80,10 @@ func main() {
 	// output
 	output = append([]DataBlock{instant}, output...)
 	for _, block := range output {
+		if block.Use > *upperLimit || block.Gen > *upperLimit {
+			log.Printf("got wild data, use=%d gen=%d, ignoring", block.Use, block.Gen)
+			continue // ignore
+		}
 		fmt.Printf("%v,%v,%v,%v,%v\n", block.When.Format(time.RFC3339), block.Gen, block.AGen, block.Use, block.AUse)
 	}
 }
