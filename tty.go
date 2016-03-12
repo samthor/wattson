@@ -20,7 +20,18 @@ func openPath(path string) (file *os.File, err error) {
 		return
 	}
 
+	defer func() {
+		if err != nil {
+			file.Close()
+		}
+	}()
+
 	fd := file.Fd()
+	err = syscall.Flock(int(fd), syscall.LOCK_EX | syscall.LOCK_NB)
+	if err != nil {
+		return nil, err // probably could not get exclusive lock
+	}
+
 	var adtio unix.Termios
 
 	adtio.Cflag = 0
@@ -40,7 +51,6 @@ func openPath(path string) (file *os.File, err error) {
 
 	_, _, errno := unix.Syscall(unix.SYS_IOCTL, uintptr(fd), uintptr(syscall.TCSETS), uintptr(unsafe.Pointer(&adtio)))
 	if errno != 0 {
-		file.Close()
 		return nil, error(errno)
 	}
 	log.Printf("set ioctl (%+v) on %v", adtio, path)
