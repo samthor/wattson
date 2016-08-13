@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"time"
 )
 
 const (
@@ -24,9 +23,9 @@ type Serial struct {
 
 // NewSerial creates a new line-buffered connection to the given ReadWriter.
 // Assumes \r\n as the line ending.
-func NewSerial(x io.ReadWriter) (serial *Serial, err error) {
+func NewSerial(x io.ReadWriter) *Serial {
 	rw := bufio.NewReadWriter(bufio.NewReader(x), bufio.NewWriter(x))
-	serial = &Serial{rw, make(chan readLine, 100)}
+	serial := &Serial{rw, make(chan readLine, 100)}
 
 	go func() {
 		for {
@@ -42,29 +41,7 @@ func NewSerial(x io.ReadWriter) (serial *Serial, err error) {
 		}
 	}()
 
-	//	serial.prime()
-	return serial, nil
-}
-
-func (s *Serial) prime() {
-	done := make(chan bool)
-	tick := time.NewTicker(500 * time.Millisecond)
-	go func() {
-		for {
-			log.Printf("sending nowv primer")
-			s.rw.WriteString("nowv" + sep)
-			s.rw.Flush()
-			select {
-			case <-done:
-				return
-			case <-tick.C:
-			}
-		}
-	}()
-
-	line := <-s.lines
-	log.Printf("got resp from primer: %v", line)
-	done <- true
+	return serial
 }
 
 // Do sends a line, reads a line.

@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"io"
 	"fmt"
 	"log"
 	"strconv"
@@ -12,11 +13,18 @@ type WattsonBridge struct {
 	Silent bool
 }
 
+// New builds a new WattsonBridge.
+func New(x io.ReadWriter) *WattsonBridge {
+	return &WattsonBridge{
+		Serial: NewSerial(x),
+		Silent: true,
+	}
+}
+
 // BaseValue performs the given cmd, parsing its result as a value in the given
 // base.
 func (w *WattsonBridge) BaseValue(cmd rune, base int) int {
 	raw := w.Do(cmd)
-
 	if len(raw) == 0 || rune(raw[0]) != cmd {
 		return -1
 	}
