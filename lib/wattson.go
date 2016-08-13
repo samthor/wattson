@@ -60,10 +60,12 @@ func (w *WattsonBridge) Series(cmd rune, arg string) []int {
 	return out
 }
 
+// Do performs the specific cmd passed, with no arguments.
 func (w *WattsonBridge) Do(cmd rune) string {
 	return w.DoArg(cmd, "")
 }
 
+// DoArg performs the specific cmd passed, with the specified argument..
 func (w *WattsonBridge) DoArg(cmd rune, arg string) string {
 	out, err := w.Serial.Do(fmt.Sprintf("now%c%s", cmd, arg))
 

@@ -42,7 +42,7 @@ func NewSerial(x io.ReadWriter) (serial *Serial, err error) {
 		}
 	}()
 
-	serial.prime()
+	//	serial.prime()
 	return serial, nil
 }
 
