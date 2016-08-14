@@ -20,7 +20,7 @@ Most replies are in the form "cNN[NN]", where 'c' is the command you sent, and '
 Some commands may brick or reset your device, this is not an extensive list.
 
 * nowp: Return the current power usage.
-        This is multiplied by the response to nown (plus one), and was likely done this way to suport usage over 65536 watts.
+        This needs to be multiplied by the response to nown (plus one), and was likely done this way to suport usage over 65536 watts.
 
 * nown: The multiplication factor to apply to nowp (plus one).
         If this is three, then multiply nowp by four to get the current usage.
