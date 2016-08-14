@@ -1,22 +1,32 @@
 wattson
 =======
 
-Wattson control library. Written to pull generation/use data out of a
-"Wattson Solar Plus", but may work with a non-solar version.
+Wattson control library.
+Written to pull generation/use data out of a "Wattson Solar Plus", but may work with a non-solar version.
 
 Some of this is inspired from [openwattson](https://github.com/sapg/openwattson/blob/master/protocol.txt).
 
-Which is in turn, inspired by [Mikko Pikarinen](http://dialog.hut.fi/openwattson/). Thanks!
+Which is in turn, inspired by [Mikko Pikarinen](http://dialog.hut.fi/openwattson/).
+Thanks!
 
 Protocol documentation
 ----------------------
 
-Wattson talks over a USB interface that on most -nix machines will just show
-up. It may require some stty wrangling.
+Wattson talks over a USB interface that on most -nix machines will just show up at `/dev/ttyUSBx`.
+It may require some stty wrangling, although this is handled by the library.
 
-You send it commands followed by '\r\n' and it replies in kind. Some commands
-may brick or reset your device, this is not an extensive list.
+You send it commands followed by '\r\n' and it replies in kind.
+Most replies are in the form "cNN[NN]", where 'c' is the command you sent, and 'NN' is a hex-encoded value (either one or two bytes).
+Some commands may brick or reset your device, this is not an extensive list.
 
+* nowp: Return the current power usage.
+        This is multiplied by the response to nown (plus one), and was likely done this way to suport usage over 65536 watts.
+
+* nown: The multiplication factor to apply to nowp (plus one).
+        If this is three, then multiply nowp by four to get the current usage.
+
+* noww: The current generation.
+        This value does *not* need to be muliplied by the response to nown.
 
 * nowd: Count of days of power use stored, not including today. The response is
         in the form "dNN" where NN is the stored days count, in hex.
@@ -56,7 +66,7 @@ may brick or reset your device, this is not an extensive list.
 stty wrangling
 --------------
 
-The Wattson expects a very specific serial connection. This library now supports this (see [`tty.go`](tty.go)), but previously this was set up manually via this magic incantation-
+The Wattson expects a very specific serial connection. This library now supports this (see [`tty.go`](lib/tty.go)), but previously this was set up manually via this magic incantation-
 
     /bin/stty -F /dev/ttyUSB1 19200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok noflsh -echoctl -echoke
 
